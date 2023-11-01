@@ -1,0 +1,30 @@
+From 8899817ceff3371649ed87b700fb81490fb258c8 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 27 Jul 2023 10:36:58 +0100
+Subject: [PATCH] fix: drop unused sha-crypt dep
+
+The use of sha-crypt was dropped with commit 8d1d1b2 but one of the
+Cargo.toml updates was missed so drop it there and update Cargo.lock
+to match.
+
+Fixes: 8d1d1b2 ("chore: replace sha-crypt with openssl process calls")
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ integration-tests/Cargo.toml |  3 +--
+ 2 files changed, 1 insertion(+), 21 deletions(-)
+
+diff --git a/integration-tests/Cargo.toml b/integration-tests/Cargo.toml
+index 451bc3f..e3b87a9 100644
+--- a/integration-tests/Cargo.toml
++++ b/integration-tests/Cargo.toml
+@@ -35,7 +35,6 @@
+ passwd = "0.0.1"
+ pem = "2.0"
+ users = "0.11.0"
+-sha-crypt = "0.5.0"
+ 
+ fdo-data-formats = { path = "../data-formats" }
+ fdo-util = { path = "../util" }
+-- 
+2.41.0
+

@@ -1,0 +1,25 @@
+From adb1d1055f85ae48b58252ca36ce00d861a27358 Mon Sep 17 00:00:00 2001
+From: Antonio Murdaca <antoniomurdaca@gmail.com>
+Date: Tue, 15 Aug 2023 16:29:53 +0200
+Subject: [PATCH] fix: relabel devcreds before onboarding
+
+Signed-off-by: Antonio Murdaca <antoniomurdaca@gmail.com>
+---
+ examples/systemd/fdo-client-linuxapp.service | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/examples/systemd/fdo-client-linuxapp.service b/examples/systemd/fdo-client-linuxapp.service
+index acfdc79..c0b3090 100644
+--- a/examples/systemd/fdo-client-linuxapp.service
++++ b/examples/systemd/fdo-client-linuxapp.service
+@@ -6,6 +6,7 @@ After=network-online.target
+ Type=oneshot
+ EnvironmentFile=-/boot/fdo-client-env
+ Environment=LOG_LEVEL=info
++ExecStartPre=-/usr/sbin/restorecon /boot/device-credentials
+ ExecStart=/usr/libexec/fdo/fdo-client-linuxapp
+ ExecStartPost=-/usr/bin/mv /boot/device-credentials /etc/device-credentials
+ 
+-- 
+2.41.0
+
