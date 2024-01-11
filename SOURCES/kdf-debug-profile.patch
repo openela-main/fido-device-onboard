@@ -1,0 +1,70 @@
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/Cargo.toml fido-device-onboard-rs-0.4.5/Cargo.toml
+--- fido-device-onboard-rs-0.4.5-orig/Cargo.toml	2022-03-29 17:38:59.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/Cargo.toml	2022-03-30 10:45:59.381526470 +0200
+@@ -17,3 +17,6 @@
+ 
+     "integration-tests",
+ ]
++
++[profile.release]
++debug = true
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-aio.service fido-device-onboard-rs-0.4.5/examples/systemd/fdo-aio.service
+--- fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-aio.service	2022-03-29 17:38:59.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/examples/systemd/fdo-aio.service	2022-03-30 10:47:12.654629934 +0200
+@@ -4,8 +4,9 @@
+ 
+ [Service]
+ Environment=LOG_LEVEL=info
++Environment=ALLOW_NONINTEROPERABLE_KDF=1
+ ExecStart=/usr/bin/fdo-admin-tool aio --directory /etc/fdo/aio --binary-path /usr/libexec/fdo
+ # restart and failure condition
+ 
+ [Install]
+-WantedBy=multi-user.target
+\ No newline at end of file
++WantedBy=multi-user.target
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-client-linuxapp.service fido-device-onboard-rs-0.4.5/examples/systemd/fdo-client-linuxapp.service
+--- fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-client-linuxapp.service	2022-03-29 17:38:59.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/examples/systemd/fdo-client-linuxapp.service	2022-03-30 10:46:15.357549030 +0200
+@@ -5,6 +5,7 @@
+ [Service]
+ Type=oneshot
+ EnvironmentFile=-/boot/fdo-client-env
++Environment=ALLOW_NONINTEROPERABLE_KDF=1
+ Environment=LOG_LEVEL=info
+ ExecStart=/usr/libexec/fdo/fdo-client-linuxapp
+ ExecStartPost=-/usr/bin/mv /boot/device-credentials /etc/device-credentials
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-owner-onboarding-server.service fido-device-onboard-rs-0.4.5/examples/systemd/fdo-owner-onboarding-server.service
+--- fido-device-onboard-rs-0.4.5-orig/examples/systemd/fdo-owner-onboarding-server.service	2022-03-29 17:38:59.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/examples/systemd/fdo-owner-onboarding-server.service	2022-03-30 10:46:21.433557612 +0200
+@@ -4,8 +4,9 @@
+ 
+ [Service]
+ Environment=LOG_LEVEL=info
++Environment=ALLOW_NONINTEROPERABLE_KDF=1
+ ExecStart=/usr/libexec/fdo/fdo-owner-onboarding-server
+ # restart and failure condition
+ 
+ [Install]
+-WantedBy=multi-user.target
+\ No newline at end of file
++WantedBy=multi-user.target
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/vendor/tss-esapi-sys/build.rs fido-device-onboard-rs-0.4.5/vendor/tss-esapi-sys/build.rs
+--- fido-device-onboard-rs-0.4.5-orig/vendor/tss-esapi-sys/build.rs	2022-03-29 19:26:41.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/vendor/tss-esapi-sys/build.rs	2022-03-30 10:46:34.037575407 +0200
+@@ -4,7 +4,7 @@
+ #[cfg(feature = "generate-bindings")]
+ use std::path::PathBuf;
+ 
+-const MINIMUM_VERSION: &str = "2.3.3";
++const MINIMUM_VERSION: &str = "2.3.2";
+ 
+ fn main() {
+     if std::env::var("DOCS_RS").is_ok() {
+diff --color -ru fido-device-onboard-rs-0.4.5-orig/vendor/tss-esapi-sys/.cargo-checksum.json fido-device-onboard-rs-0.4.5/vendor/tss-esapi-sys/.cargo-checksum.json
+--- fido-device-onboard-rs-0.4.5-orig/vendor/tss-esapi-sys/.cargo-checksum.json	2022-03-29 19:26:41.000000000 +0200
++++ fido-device-onboard-rs-0.4.5/vendor/tss-esapi-sys/.cargo-checksum.json	2022-03-30 10:46:55.432605617 +0200
+@@ -1 +1 @@
+-{"files":{"Cargo.toml":"cb816c6cd69d7eb4e712c63575fed05fb120ffaf14a6d462dae7e22d86341721","LICENSE":"cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30","README.md":"2cb476d1db06c323503dc6d15e0f5ed5d6f31b940ee19fb6a1267d26ca2ea109","build.rs":"6cc37b07c069d8e4a532922f4f816c51269a3947bc1d64b1ac5c13330da9422c","regenerate-bindings.sh":"adfc0001d4837ea2e82dadb0455b5dd1da24c728e2526ceef9e1774f2dac3174","src/bindings/aarch64-unknown-linux-gnu.rs":"fbeeefd5706344fb9b37e670f0a3ccb410d3686012f64f9b9b25038f3683f9a2","src/bindings/arm-unknown-linux-gnueabi.rs":"17dc8ad101cbec08ba9a9ef55c3c7d101164c35d19cfd694dca7e25a324101bf","src/bindings/x86_64-unknown-darwin.rs":"1a1f2cd427ebb4d4bf102204507f1fa9e2973ecb7ee7f3e27be61f7ae21a9e43","src/bindings/x86_64-unknown-linux-gnu.rs":"31473ca2a2f853acd091dad98605ee02dcdb521b70023fa8e34822b9bac4bdde","src/lib.rs":"d03e402ccd471f25acca136550af86caa33af7714290424b24b236f1ac9e450f"},"package":"0e2f37914ec4d494d145cfa18bb8429498b238d63c47a08b89d09c1ec2545ff0"}
+\ No newline at end of file
++{"files":{"Cargo.toml":"cb816c6cd69d7eb4e712c63575fed05fb120ffaf14a6d462dae7e22d86341721","LICENSE":"cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30","README.md":"2cb476d1db06c323503dc6d15e0f5ed5d6f31b940ee19fb6a1267d26ca2ea109","build.rs":"4c8649e92bafa9834c7db410c08bd5da8017708dec46a7ddbc526a8f86e91f11","regenerate-bindings.sh":"adfc0001d4837ea2e82dadb0455b5dd1da24c728e2526ceef9e1774f2dac3174","src/bindings/aarch64-unknown-linux-gnu.rs":"fbeeefd5706344fb9b37e670f0a3ccb410d3686012f64f9b9b25038f3683f9a2","src/bindings/arm-unknown-linux-gnueabi.rs":"17dc8ad101cbec08ba9a9ef55c3c7d101164c35d19cfd694dca7e25a324101bf","src/bindings/x86_64-unknown-darwin.rs":"1a1f2cd427ebb4d4bf102204507f1fa9e2973ecb7ee7f3e27be61f7ae21a9e43","src/bindings/x86_64-unknown-linux-gnu.rs":"31473ca2a2f853acd091dad98605ee02dcdb521b70023fa8e34822b9bac4bdde","src/lib.rs":"d03e402ccd471f25acca136550af86caa33af7714290424b24b236f1ac9e450f"},"package":"0e2f37914ec4d494d145cfa18bb8429498b238d63c47a08b89d09c1ec2545ff0"}
