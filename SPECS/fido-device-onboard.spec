@@ -1,21 +1,18 @@
 %global dracutlibdir %{_prefix}/lib/dracut
 %bcond_without check
-%global combined_license Apache-2.0 AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR MIT) AND ((Apache-2.0 OR MIT) AND BSD-3-Clause) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND BSD-2-Clause AND BSD-3-Clause AND (CC0-1.0 OR Apache-2.0) AND (CC0-1.0 OR MIT-0 OR Apache 2.0) AND ISC AND MIT AND ((MIT OR Apache-2.0) AND Unicode-DFS-2016) AND (Apache-2.0 OR MIT OR Zlib) AND MPL-2.0 AND (Unlicense OR MIT)
+%global combined_license Apache-2.0 AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR MIT) AND ((Apache-2.0 OR MIT) AND BSD-3-Clause) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND BSD-2-Clause AND BSD-3-Clause AND (CC0-1.0 OR Apache-2.0) AND (CC0-1.0 OR MIT-0 OR Apache-2.0) AND ISC AND MIT AND ((MIT OR Apache-2.0) AND Unicode-DFS-2016) AND (Apache-2.0 OR MIT OR Zlib) AND MPL-2.0 AND (Unlicense OR MIT)
 
 Name:           fido-device-onboard
-Version:        0.4.12
-Release:        4%{?dist}
+Version:        0.5.0
+Release:        2%{?dist}
 Summary:        A rust implementation of the FIDO Device Onboard Specification
 License:        BSD-3-Clause
 
-URL:            https://github.com/fedora-iot/fido-device-onboard-rs
+URL:            https://github.com/fdo-rs/fido-device-onboard-rs
 Source0:        %{url}/archive/v%{version}/%{name}-rs-%{version}.tar.gz
 # See make-vendored-tarfile.sh in upstream repo
 Source1:        %{name}-rs-%{version}-vendor-patched.tar.xz
-Patch0:         0001-hack-drop-shadow.patch
-Patch1:         0001-fix-drop-unused-sha-crypt-dep.patch
-Patch2:         fix-devmapper-version.patch
-Patch3:         0001-fix-relabel-devcreds-before-onboarding.patch
+Patch1:         0001-Revert-chore-use-git-fork-for-aws-nitro-enclaves-cos.patch
 
 # Because nobody cares
 ExcludeArch: %{ix86}
@@ -32,18 +29,18 @@ BuildRequires:  golang
 BuildRequires:  openssl-devel >= 3.0.1-12
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  tpm2-tss-devel
+BuildRequires:  sqlite-devel
+BuildRequires:  libpq-devel
 
 %description
 %{summary}.
 
 %prep
 %setup -q -n %{name}-rs-%{version}
-%patch0 -p1
-%patch1 -p1
-%patch3 -p1
+# general patches should go here
+%patch -P1 -p1
 
 %if 0%{?rhel}
-%patch2 -p1
 %cargo_prep -V 1
 %else
 %cargo_prep
@@ -69,6 +66,13 @@ install -D -m 0755 -t %{buildroot}%{_bindir} target/release/fdo-owner-tool
 install -D -m 0755 -t %{buildroot}%{_bindir} target/release/fdo-admin-tool
 install -D -m 0644 -t %{buildroot}%{_unitdir} examples/systemd/*
 install -D -m 0644 -t %{buildroot}%{_docdir}/fdo examples/config/*
+# db sql files
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_manufacturing_server_postgres  migrations/migrations_manufacturing_server_postgres/2023-10-03-152801_create_db/*
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_manufacturing_server_sqlite  migrations/migrations_manufacturing_server_sqlite/2023-10-03-152801_create_db/*
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_owner_onboarding_server_postgres  migrations/migrations_owner_onboarding_server_postgres/2023-10-03-152801_create_db/*
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_owner_onboarding_server_sqlite  migrations/migrations_owner_onboarding_server_sqlite/2023-10-03-152801_create_db/*
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_rendezvous_server_postgres  migrations/migrations_rendezvous_server_postgres/2023-10-03-152801_create_db/*
+install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_rendezvous_server_sqlite  migrations/migrations_rendezvous_server_sqlite/2023-10-03-152801_create_db/*
 # duplicates as needed by AIO command so link them
 ln -s %{_bindir}/fdo-owner-tool  %{buildroot}%{_libexecdir}/fdo/fdo-owner-tool
 ln -s %{_bindir}/fdo-admin-tool %{buildroot}%{_libexecdir}/fdo/fdo-admin-tool
@@ -82,6 +86,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/fdo/stores/owner_onboarding_sessions
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/stores/owner_vouchers
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/stores/rendezvous_registered
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/stores/rendezvous_sessions
+mkdir -p %{buildroot}%{_sysconfdir}/fdo/stores/serviceinfo_api_devices
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/manufacturing-server.conf.d
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/owner-onboarding-server.conf.d
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/rendezvous-server.conf.d
@@ -122,6 +127,7 @@ Requires: openssl-libs >= 3.0.1-12
 %dir %{_sysconfdir}/fdo/stores
 %dir %{_sysconfdir}/fdo/stores/owner_onboarding_sessions
 %dir %{_sysconfdir}/fdo/stores/owner_vouchers
+%dir %{_sysconfdir}/fdo/stores/serviceinfo_api_devices
 %{_libexecdir}/fdo/fdo-owner-onboarding-server
 %{_libexecdir}/fdo/fdo-serviceinfo-api-server
 %dir %{_localstatedir}/lib/fdo
@@ -129,6 +135,8 @@ Requires: openssl-libs >= 3.0.1-12
 %{_docdir}/fdo/device_specific_serviceinfo.yml
 %{_docdir}/fdo/serviceinfo-api-server.yml
 %{_docdir}/fdo/owner-onboarding-server.yml
+%{_docdir}/fdo/migrations/migrations_owner_onboarding_server_postgres/*
+%{_docdir}/fdo/migrations/migrations_owner_onboarding_server_sqlite/*
 %{_unitdir}/fdo-serviceinfo-api-server.service
 %{_unitdir}/fdo-owner-onboarding-server.service
 
@@ -162,6 +170,8 @@ License: %combined_license
 %dir %{_localstatedir}/lib/fdo
 %dir %{_docdir}/fdo
 %{_docdir}/fdo/rendezvous-*.yml
+%{_docdir}/fdo/migrations/migrations_rendezvous_server_postgres/*
+%{_docdir}/fdo/migrations/migrations_rendezvous_server_sqlite/*
 %{_unitdir}/fdo-rendezvous-server.service
 
 %post -n fdo-rendezvous-server
@@ -193,6 +203,8 @@ Requires: openssl-libs >= 3.0.1-12
 %dir %{_localstatedir}/lib/fdo
 %dir %{_docdir}/fdo
 %{_docdir}/fdo/manufacturing-server.yml
+%{_docdir}/fdo/migrations/migrations_manufacturing_server_postgres/*
+%{_docdir}/fdo/migrations/migrations_manufacturing_server_sqlite/*
 %{_unitdir}/fdo-manufacturing-server.service
 
 %post -n fdo-manufacturing-server
@@ -270,6 +282,13 @@ Requires: fdo-init = %{version}-%{release}
 %systemd_postun_with_restart fdo-aio.service
 
 %changelog
+* Wed Feb 28 2024 Irene Diez <idiez@redhat.com> - 0.5.0-2
+- Update license
+
+* Thu Feb 22 2024 Irene Diez <idiez@redhat.com> - 0.5.0-1
+- New version 0.5.0, adds database support
+- Remove unused patches
+
 * Wed Aug 23 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 0.4.12-4
 - Ensure client service fix is applied
 
