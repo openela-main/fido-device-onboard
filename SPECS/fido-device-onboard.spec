@@ -3,8 +3,8 @@
 %global combined_license Apache-2.0 AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR MIT) AND ((Apache-2.0 OR MIT) AND BSD-3-Clause) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND BSD-2-Clause AND BSD-3-Clause AND (CC0-1.0 OR Apache-2.0) AND (CC0-1.0 OR MIT-0 OR Apache-2.0) AND ISC AND MIT AND ((MIT OR Apache-2.0) AND Unicode-DFS-2016) AND (Apache-2.0 OR MIT OR Zlib) AND MPL-2.0 AND (Unlicense OR MIT)
 
 Name:           fido-device-onboard
-Version:        0.5.0
-Release:        2%{?dist}
+Version:        0.5.1
+Release:        1%{?dist}
 Summary:        A rust implementation of the FIDO Device Onboard Specification
 License:        BSD-3-Clause
 
@@ -36,13 +36,19 @@ BuildRequires:  libpq-devel
 %{summary}.
 
 %prep
-%setup -q -n %{name}-rs-%{version}
-# general patches should go here
-%patch -P1 -p1
 
 %if 0%{?rhel}
-%cargo_prep -V 1
+%autosetup -p1 -a1 -n %{name}-rs-%{version}
+rm -f Cargo.lock
+%if 0%{?rhel} >= 10
+%cargo_prep -v vendor
 %else
+%cargo_prep -V 1
+%endif
+%endif
+
+%if 0%{?fedora}
+%autosetup -p1 -n %{name}-rs-%{version}
 %cargo_prep
 %generate_buildrequires
 %cargo_generate_buildrequires -a
@@ -54,6 +60,9 @@ BuildRequires:  libpq-devel
 
 %{?cargo_license_summary}
 %{?cargo_license} > LICENSE.dependencies
+%if 0%{?rhel} >= 10
+%cargo_vendor_manifest
+%endif
 
 %install
 install -D -m 0755 -t %{buildroot}%{_libexecdir}/fdo target/release/fdo-client-linuxapp
@@ -74,8 +83,9 @@ install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_owner_onb
 install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_rendezvous_server_postgres  migrations/migrations_rendezvous_server_postgres/2023-10-03-152801_create_db/*
 install -D -m 0644 -t %{buildroot}%{_docdir}/fdo/migrations/migrations_rendezvous_server_sqlite  migrations/migrations_rendezvous_server_sqlite/2023-10-03-152801_create_db/*
 # duplicates as needed by AIO command so link them
-ln -s %{_bindir}/fdo-owner-tool  %{buildroot}%{_libexecdir}/fdo/fdo-owner-tool
-ln -s %{_bindir}/fdo-admin-tool %{buildroot}%{_libexecdir}/fdo/fdo-admin-tool
+mkdir -p %{buildroot}%{_bindir}
+ln -sr %{buildroot}%{_bindir}/fdo-owner-tool  %{buildroot}%{_libexecdir}/fdo/fdo-owner-tool
+ln -sr %{buildroot}%{_bindir}/fdo-admin-tool %{buildroot}%{_libexecdir}/fdo/fdo-admin-tool
 # Create directories needed by the various services so we own them
 mkdir -p %{buildroot}%{_sysconfdir}/fdo
 mkdir -p %{buildroot}%{_sysconfdir}/fdo/keys
@@ -108,6 +118,9 @@ Requires: dracut
 
 %files -n fdo-init
 %license LICENSE LICENSE.dependencies
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %{dracutlibdir}/modules.d/52fdo/
 %{_libexecdir}/fdo/fdo-manufacturing-client
 
@@ -120,6 +133,9 @@ Requires: openssl-libs >= 3.0.1-12
 
 %files -n fdo-owner-onboarding-server
 %license LICENSE LICENSE.dependencies
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %dir %{_sysconfdir}/fdo
 %dir %{_sysconfdir}/fdo/keys
 %dir %{_sysconfdir}/fdo/owner-onboarding-server.conf.d
@@ -160,6 +176,9 @@ License: %combined_license
 
 %files -n fdo-rendezvous-server
 %license LICENSE LICENSE.dependencies
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %dir %{_sysconfdir}/fdo
 %dir %{_sysconfdir}/fdo/keys
 %dir %{_sysconfdir}/fdo/rendezvous-server.conf.d
@@ -192,13 +211,16 @@ Requires: openssl-libs >= 3.0.1-12
 
 %files -n fdo-manufacturing-server
 %license LICENSE LICENSE.dependencies
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %dir %{_sysconfdir}/fdo
 %dir %{_sysconfdir}/fdo/keys
 %dir %{_sysconfdir}/fdo/manufacturing-server.conf.d
-%dir %{_sysconfdir}/fdo/keys
 %dir %{_sysconfdir}/fdo/stores
 %dir %{_sysconfdir}/fdo/stores/manufacturer_keys
 %dir %{_sysconfdir}/fdo/stores/manufacturing_sessions
+%dir %{_sysconfdir}/fdo/stores/owner_vouchers
 %{_libexecdir}/fdo/fdo-manufacturing-server
 %dir %{_localstatedir}/lib/fdo
 %dir %{_docdir}/fdo
@@ -228,6 +250,9 @@ Requires: cryptsetup
 %{summary}
 
 %files -n fdo-client
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %license LICENSE LICENSE.dependencies
 %{_libexecdir}/fdo/fdo-client-linuxapp
 %{_unitdir}/fdo-client-linuxapp.service
@@ -248,6 +273,9 @@ License: %combined_license
 %{summary}
 
 %files -n fdo-owner-cli
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %license LICENSE LICENSE.dependencies
 %{_bindir}/fdo-owner-tool
 %{_libexecdir}/fdo/fdo-owner-tool
@@ -265,6 +293,9 @@ Requires: fdo-init = %{version}-%{release}
 %{summary}
 
 %files -n fdo-admin-cli
+%if 0%{?rhel} >= 10
+%license cargo-vendor.txt
+%endif
 %license LICENSE LICENSE.dependencies
 %dir %{_sysconfdir}/fdo
 %dir %{_sysconfdir}/fdo/keys
@@ -282,6 +313,50 @@ Requires: fdo-init = %{version}-%{release}
 %systemd_postun_with_restart fdo-aio.service
 
 %changelog
+* Tue Nov 26 2024 Antonio Murdaca <amurdaca@redhat.com> - 0.5.1-1
+## What's Changed
+ * chore: update patch for new release by @nullr0ute in https://github.com/fdo-rs/fido-device-onboard-rs/pull/625
+ * chore: fix require error with commitlint by @miabbott in https://github.com/fdo-rs/fido-device-onboard-rs/pull/636
+ * fix(license): replace space with - in Apache 2.0 by @7flying in https://github.com/fdo-rs/fido-device-onboard-rs/pull/632
+ * fix(data-formats): use serde_tuple serializer for error messages by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/629
+ * fix: cargo test for non-root users by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/635
+ * fix(get_current_user_name): remove trailing whitespaces. by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/638
+ * chore: bump mio from 0.8.10 to 0.8.11 by @dependabot in https://github.com/fdo-rs/fido-device-onboard-rs/pull/640
+ * fix: vendored tarfile creation by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/634
+ * fix: static-mut-refs warning by @7flying in https://github.com/fdo-rs/fido-device-onboard-rs/pull/651
+ * Enable CentOS 9 builds and add Testing Farm e2e tests by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/650
+ * Add an OV re-registration window option when using DB storage by @7flying in https://github.com/fdo-rs/fido-device-onboard-rs/pull/643
+ * chore: bump pem from 2.0.1 to 3.0.3 by @dependabot in https://github.com/fdo-rs/fido-device-onboard-rs/pull/639
+ * chore: bump h2 from 0.3.25 to 0.3.26 by @dependabot in https://github.com/fdo-rs/fido-device-onboard-rs/pull/659
+ * feat: verify trusted manufacturers by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/656
+ * database enhancements by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/666
+ * chore: bump openssl to 0.10.66 by @7flying in https://github.com/fdo-rs/fido-device-onboard-rs/pull/664
+ * chore(store): make the store OVs agnostic by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/671
+ * feat(manufacturing-server): implement an export OVs endpoint  by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/673
+ * fix(systemd-units): run before powering off the system by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/676
+ * fix(dracut): use isolate on error in the manufacturing-client service by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/678
+ * fix(systemd-generator): write configuration to '/run' by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/677
+ * fix(owner-tool): use the new API to export ovs by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/675
+ * chore: update diesel to 2.2.3 by @7flying in https://github.com/fdo-rs/fido-device-onboard-rs/pull/669
+ * chore: bump reqwest from 0.11.27 to 0.12.7 by @dependabot in https://github.com/fdo-rs/fido-device-onboard-rs/pull/683
+ * fix: use centos-stream-9 target instead of epel-9 by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/687
+ * enhance onboarding testing by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/681
+ * ci: add konflux test cases by @yih-redhat in https://github.com/fdo-rs/fido-device-onboard-rs/pull/688
+ * fix(make-vendored-tarfile.sh): exclude idna tests with unicode points by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/692
+ * chore: bump for 0.5.1 by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/693
+
+## New Contributors
+ * @miabbott made their first contribution in https://github.com/fdo-rs/fido-device-onboard-rs/pull/636
+ * @yih-redhat made their first contribution in https://github.com/fdo-rs/fido-device-onboard-rs/pull/688
+
+ **Full Changelog**: https://github.com/fdo-rs/fido-device-onboard-rs/compare/v0.5.0...v0.5.1
+
+* Thu Oct 03 2024 Miguel Martín <mmartinv@redhat.com> - 0.5.0-4
+- Apply all the patches in the spec
+
+* Wed Oct 02 2024 Miguel Martín <mmartinv@redhat.com> - 0.5.0-3
+- Backport https://github.com/fdo-rs/fido-device-onboard-rs/pull/676
+
 * Wed Feb 28 2024 Irene Diez <idiez@redhat.com> - 0.5.0-2
 - Update license
 
