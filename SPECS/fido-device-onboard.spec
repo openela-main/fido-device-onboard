@@ -3,16 +3,15 @@
 %global combined_license Apache-2.0 AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR MIT) AND ((Apache-2.0 OR MIT) AND BSD-3-Clause) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND BSD-2-Clause AND BSD-3-Clause AND (CC0-1.0 OR Apache-2.0) AND (CC0-1.0 OR MIT-0 OR Apache-2.0) AND ISC AND MIT AND ((MIT OR Apache-2.0) AND Unicode-DFS-2016) AND (Apache-2.0 OR MIT OR Zlib) AND MPL-2.0 AND (Unlicense OR MIT)
 
 Name:           fido-device-onboard
-Version:        0.5.1
+Version:        0.5.6
 Release:        1%{?dist}
 Summary:        A rust implementation of the FIDO Device Onboard Specification
 License:        BSD-3-Clause
 
 URL:            https://github.com/fdo-rs/fido-device-onboard-rs
 Source0:        %{url}/archive/v%{version}/%{name}-rs-%{version}.tar.gz
-# See make-vendored-tarfile.sh in upstream repo
 Source1:        %{name}-rs-%{version}-vendor-patched.tar.xz
-Patch1:         0001-Revert-chore-use-git-fork-for-aws-nitro-enclaves-cos.patch
+Patch1:         0001-use-released-aws-nitro-enclaves-cose-version.patch
 
 # Because nobody cares
 ExcludeArch: %{ix86}
@@ -313,6 +312,30 @@ Requires: fdo-init = %{version}-%{release}
 %systemd_postun_with_restart fdo-aio.service
 
 %changelog
+* Wed Aug 19 2026 Kenneth Giusti <kgiusti@redhat.com> - 0.5.6-1
+## What's Changed
+ * chore: bump wagoid/commitlint-github-action from 5 to 6 by @dependabot[bot] in https://github.com/fdo-rs/fido-device-onboard-rs/pull/655
+ * chore: bump actions/labeler from 4 to 5 by @dependabot[bot] in https://github.com/fdo-rs/fido-device-onboard-rs/pull/585
+ * chore: bump actions/setup-node from 3 to 4 by @dependabot[bot] in https://github.com/fdo-rs/fido-device-onboard-rs/pull/568
+ * fix: clippy warning by @pcdubs in https://github.com/fdo-rs/fido-device-onboard-rs/pull/776
+ * ci: add spellcheck exceptions by @mcattamoredhat in https://github.com/fdo-rs/fido-device-onboard-rs/pull/782
+ * ci: add ci fixes by @mcattamoredhat in https://github.com/fdo-rs/fido-device-onboard-rs/pull/784
+ * ci(mergify): upgrade configuration to current format by @mergify[bot] in https://github.com/fdo-rs/fido-device-onboard-rs/pull/767
+ * ci: add Image Mode test automation without Packit by @mcattamoredhat in https://github.com/fdo-rs/fido-device-onboard-rs/pull/770
+ * chore(README): add deprecation notice by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/802
+ * Update nix dependency from 0.26 to 0.31 by @musicinmybrain in https://github.com/fdo-rs/fido-device-onboard-rs/pull/803
+ * fix(.packit.yaml): use explicit distros mapping for CentOS Stream tests by @mmartinv in https://github.com/fdo-rs/fido-device-onboard-rs/pull/809
+ * fix: update bindgen for LLVM 22 compatibility by @knecasov in https://github.com/fdo-rs/fido-device-onboard-rs/pull/808
+ * chore: bump for 0.5.6 release by @runcom in https://github.com/fdo-rs/fido-device-onboard-rs/pull/810
+
+## New Contributors
+ * @mcattamoredhat made their first contribution in https://github.com/fdo-rs/fido-device-onboard-rs/pull/782
+ * @musicinmybrain made their first contribution in https://github.com/fdo-rs/fido-device-onboard-rs/pull/803
+ * @knecasov made their first contribution in https://github.com/fdo-rs/fido-device-onboard-rs/pull/808
+
+ **Full Changelog**: https://github.com/fdo-rs/fido-device-onboard-rs/compare/v0.5.5...v0.5.6
+- Resolves: RHEL-170941
+
 * Tue Nov 26 2024 Antonio Murdaca <amurdaca@redhat.com> - 0.5.1-1
 ## What's Changed
  * chore: update patch for new release by @nullr0ute in https://github.com/fdo-rs/fido-device-onboard-rs/pull/625
